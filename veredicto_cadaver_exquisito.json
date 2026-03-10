@@ -1,0 +1,57 @@
+{
+  "libro": "Cadáver exquisito - Agustina Bazterrica",
+  "todas_las_incoherencias": [
+    {
+      "tipo": "moral",
+      "descripcion": "Canibalismo como norma social",
+      "contexto": "La obra presenta un mundo donde el canibalismo es aceptado socialmente.",
+      "severidad": 9,
+      "quien_detecta": "Sacerdote",
+      "argumento": "El canibalismo transgrede la dignidad humana y la moral cristiana."
+    },
+    {
+      "tipo": "moral",
+      "descripcion": "Deshumanización y cosificación de las mujeres",
+      "contexto": "Las mujeres son tratadas como objetos de consumo en la narrativa.",
+      "severidad": 8,
+      "quien_detecta": "Sacerdote",
+      "argumento": "La representación de las mujeres despoja su identidad y dignidad."
+    },
+    {
+      "tipo": "moral",
+      "descripcion": "Falta de compasión y empatía",
+      "contexto": "La indiferencia hacia el sufrimiento ajeno es un tema recurrente.",
+      "severidad": 7,
+      "quien_detecta": "Sacerdote",
+      "argumento": "La normalización de la crueldad contradice valores cristianos de compasión."
+    },
+    {
+      "tipo": "narrativa",
+      "descripcion": "Coherencia interna del protagonista",
+      "contexto": "Marcos Tejo presenta inconsistencias en su caracterización.",
+      "severidad": 6,
+      "quien_detecta": "Crítico Literario",
+      "argumento": "La fluctuación en su carácter confunde al lector sobre su conflicto interno."
+    },
+    {
+      "tipo": "narrativa",
+      "descripcion": "Desarrollo de 'la mujer'",
+      "contexto": "El personaje femenino carece de desarrollo psicológico claro.",
+      "severidad": 5,
+      "quien_detecta": "Crítico Literario",
+      "argumento": "Su falta de profundidad limita la conexión emocional con el lector."
+    },
+    {
+      "tipo": "estructural",
+      "descripcion": "Estructura narrativa",
+      "contexto": "La alternancia entre primera y tercera persona provoca incoherencias.",
+      "severidad": 4,
+      "quien_detecta": "Crítico Literario",
+      "argumento": "La combinación de perspectivas puede desubicar al lector."
+    }
+  ],
+  "veredicto_juez": "Ambos, el sacerdote y el crítico, presentan argumentos válidos sobre las incoherencias de la obra. Sin embargo, el sacerdote se enfoca en la moralidad y ética, mientras que el crítico se centra en la narrativa y estructura. La defensa del meta-crítico sugiere que muchas de las incoherencias pueden ser interpretadas como decisiones artísticas intencionales. Por lo tanto, se considera que el crítico tiene más razón en cuanto a la intención artística de Bazterrica, aunque el sacerdote plantea preocupaciones morales significativas.",
+  "quien_tiene_razon": "critico",
+  "nivel_controversia": 9,
+  "recomendacion_lectura": "Recomiendo la lectura de 'Cadáver exquisito' para aquellos interesados en la exploración de temas oscuros y provocativos en la literatura contemporánea, así como para quienes buscan reflexionar sobre la condición humana y las dinámicas de poder en la sociedad."
+}

@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema A2A - Análisis Multi-Agente</title>
+    <style>
+        /* ============================================
+           ESTILOS CSS - Interfaz A2A
+           ============================================ */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid #333;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #888;
+            font-size: 1.1em;
+        }
+
+        /* Layout principal */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        /* Panel lateral - Agentes */
+        .agents-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+
+        .agents-panel h2 {
+            color: #00d4ff;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .agent-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .agent-card:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .agent-card.sacerdote { border-left-color: #9b59b6; }
+        .agent-card.critico { border-left-color: #3498db; }
+        .agent-card.meta_critico { border-left-color: #e67e22; }
+        .agent-card.juez { border-left-color: #2ecc71; }
+
+        .agent-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .agent-card .icon {
+            font-size: 1.3em;
+        }
+
+        .agent-card p {
+            font-size: 0.85em;
+            color: #aaa;
+            line-height: 1.4;
+        }
+
+        .agent-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2ecc71;
+            margin-left: 8px;
+        }
+
+        .agent-status.busy { background: #f39c12; }
+        .agent-status.offline { background: #e74c3c; }
+
+        /* Panel principal - Mensajes */
+        .messages-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+
+        .messages-header h2 {
+            color: #00d4ff;
+        }
+
+        /* Botón de análisis */
+        .btn-analisis {
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-analisis:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-analisis:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Área de mensajes */
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 700px;
+            padding-right: 10px;
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .message-route {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+
+        .message-route .arrow {
+            color: #00d4ff;
+        }
+
+        .message-route .from { color: #9b59b6; }
+        .message-route .to { color: #2ecc71; }
+
+        .message-type {
+            font-size: 0.8em;
+            padding: 3px 10px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .message-type.task_request { background: #3498db33; color: #3498db; }
+        .message-type.task_response { background: #2ecc7133; color: #2ecc71; }
+        .message-type.query { background: #9b59b633; color: #9b59b6; }
+        .message-type.query_response { background: #e67e2233; color: #e67e22; }
+
+        .message-content {
+            font-size: 0.9em;
+            color: #ccc;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .message-time {
+            font-size: 0.75em;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        /* Estado de conexión */
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .connection-status.connected {
+            background: #2ecc7133;
+            color: #2ecc71;
+            border: 1px solid #2ecc71;
+        }
+
+        .connection-status.disconnected {
+            background: #e74c3c33;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+
+        .connection-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Grafo visual */
+        .graph-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .graph-section h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+        }
+
+        .graph-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .graph-node {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .graph-node.sacerdote { background: #9b59b633; border: 2px solid #9b59b6; }
+        .graph-node.critico { background: #3498db33; border: 2px solid #3498db; }
+        .graph-node.meta_critico { background: #e67e2233; border: 2px solid #e67e22; }
+        .graph-node.juez { background: #2ecc7133; border: 2px solid #2ecc71; }
+
+        .graph-node.active {
+            animation: nodeActive 1s infinite;
+        }
+
+        @keyframes nodeActive {
+            0%, 100% { box-shadow: 0 0 10px currentColor; }
+            50% { box-shadow: 0 0 30px currentColor; }
+        }
+
+        .graph-arrow {
+            width: 50px;
+            height: 2px;
+            background: #444;
+            position: relative;
+        }
+
+        .graph-arrow::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -4px;
+            border: 5px solid transparent;
+            border-left-color: #444;
+        }
+
+        .graph-arrow.active {
+            background: #00d4ff;
+        }
+
+        .graph-arrow.active::after {
+            border-left-color: #00d4ff;
+        }
+
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .agents-panel {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .agent-card {
+                flex: 1;
+                min-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>Sistema A2A</h1>
+            <p>Agent-to-Agent Communication Protocol - Análisis Literario Multi-Agente</p>
+        </header>
+
+        <!-- Layout Principal -->
+        <div class="main-layout">
+            <!-- Panel de Agentes -->
+            <aside class="agents-panel">
+                <h2>Agentes Disponibles</h2>
+
+                <div class="agent-card sacerdote" id="agent-sacerdote">
+                    <h3>
+                        <span class="icon">📿</span>
+                        Sacerdote
+                        <span class="agent-status" id="status-sacerdote"></span>
+                    </h3>
+                    <p>Análisis moral y ético desde perspectiva católica</p>
+                </div>
+
+                <div class="agent-card critico" id="agent-critico">
+                    <h3>
+                        <span class="icon">📚</span>
+                        Crítico
+                        <span class="agent-status" id="status-critico"></span>
+                    </h3>
+                    <p>Análisis narrativo y estructural</p>
+                </div>
+
+                <div class="agent-card meta_critico" id="agent-meta_critico">
+                    <h3>
+                        <span class="icon">🎭</span>
+                        Meta-Crítico
+                        <span class="agent-status" id="status-meta_critico"></span>
+                    </h3>
+                    <p>Defensa de decisiones artísticas</p>
+                </div>
+
+                <div class="agent-card juez" id="agent-juez">
+                    <h3>
+                        <span class="icon">⚖️</span>
+                        Juez
+                        <span class="agent-status" id="status-juez"></span>
+                    </h3>
+                    <p>Coordinador y emisor del veredicto</p>
+                </div>
+
+                <!-- Grafo Visual -->
+                <div class="graph-section">
+                    <h3>Flujo A2A</h3>
+                    <div class="graph-container">
+                        <div class="graph-node juez" id="node-juez">
+                            ⚖️<br>Juez
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Panel de Mensajes -->
+            <main class="messages-panel">
+                <div class="messages-header">
+                    <div>
+                        <h2>Comunicación entre Agentes</h2>
+                        <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center;">
+                            <label style="color: #aaa; font-size: 0.9em;">
+                                📖 Libro a analizar:
+                            </label>
+                            <input
+                                type="text"
+                                id="input-libro"
+                                placeholder="Cadáver exquisito - Agustina Bazterrica"
+                                value="Cadáver exquisito - Agustina Bazterrica"
+                                style="
+                                    padding: 8px 12px;
+                                    border-radius: 5px;
+                                    border: 1px solid #444;
+                                    background: rgba(255,255,255,0.05);
+                                    color: #eee;
+                                    font-size: 0.9em;
+                                    width: 300px;
+                                "
+                            />
+                        </div>
+                    </div>
+                    <button class="btn-analisis" id="btn-analisis" onclick="iniciarAnalisis()">
+                        🚀 Iniciar Análisis A2A
+                    </button>
+                </div>
+
+                <div class="messages-area" id="messages-area">
+                    <div class="message">
+                        <div class="message-header">
+                            <span class="message-route">
+                                <span class="from">Sistema</span>
+                            </span>
+                            <span class="message-type">info</span>
+                        </div>
+                        <div class="message-content">
+Bienvenido al Sistema A2A de Análisis Literario.
+
+Puedes cambiar el libro a analizar en el campo de arriba.
+Luego haz clic en "Iniciar Análisis A2A" para comenzar.
+
+Los mensajes entre agentes aparecerán aquí en tiempo real.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección de Veredicto Final -->
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #333; display: none;" id="veredicto-section">
+                    <h3 style="color: #2ecc71; margin-bottom: 15px;">⚖️ VEREDICTO FINAL DEL JUEZ</h3>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                        <div style="background: rgba(46, 204, 113, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #2ecc71;">
+                            <strong style="color: #2ecc71;">👑 Ganador del Debate:</strong>
+                            <div id="veredicto-ganador" style="color: #eee; margin-top: 5px;">-</div>
+                        </div>
+
+                        <div style="background: rgba(230, 126, 34, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #e67e22;">
+                            <strong style="color: #e67e22;">🌡️ Nivel de Controversia:</strong>
+                            <div id="veredicto-controversia" style="color: #eee; margin-top: 5px;">-</div>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <strong style="color: #00d4ff;">📋 Reflexión del Juez:</strong>
+                        <div id="veredicto-reflexion" style="color: #ccc; margin-top: 10px; line-height: 1.6; white-space: pre-wrap;">-</div>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                        <strong style="color: #9b59b6;">💡 Recomendación de Lectura:</strong>
+                        <div id="veredicto-recomendacion" style="color: #ccc; margin-top: 10px; line-height: 1.6; white-space: pre-wrap;">-</div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Estado de Conexión -->
+    <div class="connection-status disconnected" id="connection-status">
+        <span class="connection-dot"></span>
+        <span id="connection-text">Desconectado</span>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // ============================================
+        // JAVASCRIPT - Lógica de la UI A2A
+        // ============================================
+
+        let ws = null;
+        let isConnected = false;
+
+        // Conectar WebSocket al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            connectWebSocket();
+        });
+
+        // Conectar al WebSocket
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+
+            console.log('Conectando a WebSocket:', wsUrl);
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('WebSocket conectado');
+                isConnected = true;
+                updateConnectionStatus(true);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket desconectado');
+                isConnected = false;
+                updateConnectionStatus(false);
+
+                // Reconectar después de 3 segundos
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            ws.onerror = (error) => {
+                console.error('Error en WebSocket:', error);
+            };
+        }
+
+        // Actualizar estado de conexión en la UI
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connection-status');
+            const textEl = document.getElementById('connection-text');
+
+            if (connected) {
+                statusEl.className = 'connection-status connected';
+                textEl.textContent = 'Conectado';
+            } else {
+                statusEl.className = 'connection-status disconnected';
+                textEl.textContent = 'Desconectado';
+            }
+        }
+
+        // Manejar mensajes del WebSocket
+        function handleWebSocketMessage(data) {
+            console.log('Mensaje recibido:', data);
+
+            if (data.event_type === 'connected') {
+                addSystemMessage('Conectado al servidor A2A');
+                return;
+            }
+
+            if (data.event_type === 'message_sent') {
+                const msgData = data.data;
+                addAgentMessage(msgData);
+                highlightAgent(msgData.from_agent);
+                highlightAgent(msgData.to_agent);
+            }
+        }
+
+        // Agregar mensaje del sistema
+        function addSystemMessage(text) {
+            const messagesArea = document.getElementById('messages-area');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message';
+            messageEl.innerHTML = `
+                <div class="message-header">
+                    <span class="message-route">
+                        <span class="from">Sistema</span>
+                    </span>
+                    <span class="message-type">info</span>
+                </div>
+                <div class="message-content">${text}</div>
+                <div class="message-time">${new Date().toLocaleTimeString()}</div>
+            `;
+            messagesArea.appendChild(messageEl);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        // Agregar mensaje de agente (versión chat mejorada - SIN TRUNCADO)
+        function addAgentMessage(data) {
+            const messagesArea = document.getElementById('messages-area');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message';
+
+            // Extraer contenido relevante según el tipo de mensaje
+            let displayText = '';
+            let action = '';
+
+            if (data.type === 'task_request') {
+                const skill = data.content.skill_id || 'tarea';
+                action = `solicita → ${skill}`;
+                displayText = `⏳ Ejecutando: ${skill}`;
+            }
+            else if (data.type === 'task_response') {
+                const result = data.content.result || {};
+
+                // Buscar en varios campos posibles
+                if (result.analisis) {
+                    displayText = result.analisis;
+                } else if (result.defensa) {
+                    displayText = result.defensa;
+                } else if (result.contra_argumento) {
+                    displayText = result.contra_argumento;
+                } else if (result.respuesta) {
+                    displayText = result.respuesta;
+                } else if (result.error) {
+                    displayText = `❌ Error: ${result.error}`;
+                } else {
+                    // Si nada coincide, mostrar como JSON compacto
+                    displayText = JSON.stringify(result, null, 2);
+                }
+                action = 'responde ✓';
+            }
+            else if (data.type === 'query') {
+                displayText = data.content.question || 'Pregunta';
+                action = 'pregunta ?';
+            }
+            else if (data.type === 'query_response') {
+                displayText = data.content.response || 'Respuesta';
+                action = 'responde ✓';
+            }
+            else if (data.type === 'error') {
+                displayText = `❌ Error: ${data.content.error || 'Error desconocido'}`;
+                action = 'error ✗';
+            }
+            else {
+                displayText = JSON.stringify(data.content, null, 2);
+            }
+
+            // NO truncar - mostrar texto completo
+            // Si es muy largo (> 2000 caracteres), agregar indicador
+            // if (displayText.length > 2000) {
+            //     displayText = displayText.substring(0, 2000) + '\n\n[... contenido truncado por longitud ...]';
+            // }
+
+            const fromEmoji = getAgentEmoji(data.from_agent);
+            const toEmoji = getAgentEmoji(data.to_agent);
+
+            messageEl.innerHTML = `
+                <div class="message-header">
+                    <span class="message-route">
+                        <strong>${fromEmoji} ${capitalizar(data.from_agent)}</strong>
+                        <span class="arrow">${action}</span>
+                        <strong>${toEmoji} ${capitalizar(data.to_agent)}</strong>
+                    </span>
+                </div>
+                <div class="message-content">${escapeHtml(displayText)}</div>
+                <div class="message-time">${new Date(data.timestamp).toLocaleTimeString()}</div>
+            `;
+            messagesArea.appendChild(messageEl);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        // Capitalizar texto
+        function capitalizar(texto) {
+            return texto.charAt(0).toUpperCase() + texto.slice(1);
+        }
+
+        // Obtener emoji del agente
+        function getAgentEmoji(agentId) {
+            const emojis = {
+                'sacerdote': '📿',
+                'critico': '📚',
+                'meta_critico': '🎭',
+                'juez': '⚖️',
+                'system': '🖥️'
+            };
+            return emojis[agentId] || '🤖';
+        }
+
+        // Escapar HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Resaltar agente activo
+        function highlightAgent(agentId) {
+            const agentCard = document.getElementById(`agent-${agentId}`);
+            if (agentCard) {
+                agentCard.style.background = 'rgba(0, 212, 255, 0.2)';
+                setTimeout(() => {
+                    agentCard.style.background = '';
+                }, 1000);
+            }
+        }
+
+        // Iniciar análisis
+        async function iniciarAnalisis() {
+            const btn = document.getElementById('btn-analisis');
+            const inputLibro = document.getElementById('input-libro');
+            const libro = inputLibro.value || 'Cadáver exquisito - Agustina Bazterrica';
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Analizando...';
+
+            addSystemMessage(`🚀 Iniciando análisis A2A de "${libro}"...`);
+
+            try {
+                const response = await fetch('/analisis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        libro: libro
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.veredicto) {
+                    addSystemMessage('✅ Análisis completado. Veredicto emitido.');
+
+                    // Mostrar veredicto en la sección especial
+                    mostrarVeredicto(result.veredicto);
+                } else {
+                    addSystemMessage('⚠️ Análisis completado pero sin veredicto estructurado.');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                addSystemMessage('❌ Error al iniciar el análisis: ' + error.message);
+            }
+
+            btn.disabled = false;
+            btn.textContent = '🚀 Iniciar Análisis A2A';
+        }
+
+        // Mostrar el veredicto final en la sección especial
+        function mostrarVeredicto(veredicto) {
+            const section = document.getElementById('veredicto-section');
+            const ganador = document.getElementById('veredicto-ganador');
+            const controversia = document.getElementById('veredicto-controversia');
+            const reflexion = document.getElementById('veredicto-reflexion');
+            const recomendacion = document.getElementById('veredicto-recomendacion');
+
+            // Mapear nombres de ganadores a emojis
+            const ganadoresEmoji = {
+                'sacerdote': '📿 Sacerdote',
+                'critico': '📚 Crítico Literario',
+                'critico_del_critico': '🎭 Meta-Crítico',
+                'empate': '⚖️ Empate'
+            };
+
+            // Llenar los campos
+            const ganadorNombre = veredicto.quien_tiene_razon || 'empate';
+            ganador.textContent = ganadoresEmoji[ganadorNombre] || ganadorNombre;
+
+            const nivelControversia = veredicto.nivel_controversia || 0;
+            const barraControversia = '█'.repeat(nivelControversia) + '░'.repeat(10 - nivelControversia);
+            controversia.textContent = `${nivelControversia}/10 ${barraControversia}`;
+
+            reflexion.textContent = veredicto.veredicto_juez || 'Sin reflexión disponible';
+            recomendacion.textContent = veredicto.recomendacion_lectura || 'Sin recomendación disponible';
+
+            // Mostrar la sección
+            section.style.display = 'block';
+
+            // Scroll hacia el veredicto
+            setTimeout(() => {
+                section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+    </script>
+</body>
+</html>

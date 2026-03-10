@@ -1,0 +1,24 @@
+# ============================================================================
+# DEPENDENCIAS DEL PROYECTO A2A (Agent-to-Agent)
+# ============================================================================
+
+# --- LangChain y LangGraph (para los agentes LLM) ---
+langchain>=0.1.0
+langchain-openai>=0.1.0
+langchain-core>=0.1.0
+langgraph>=0.1.0
+langchain-community>=0.1.0
+
+# --- Pydantic (validación de datos y modelos) ---
+pydantic>=2.0.0
+
+# --- Variables de entorno ---
+python-dotenv>=1.0.0
+
+# --- FastAPI y servidor (NUEVO para A2A) ---
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0    # Servidor ASGI con soporte WebSocket
+websockets>=12.0              # Para comunicación real-time
+
+# --- Utilidades ---
+httpx>=0.26.0                 # Cliente HTTP async (para que agentes se comuniquen)
